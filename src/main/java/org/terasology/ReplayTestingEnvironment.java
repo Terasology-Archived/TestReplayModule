@@ -74,6 +74,10 @@ public abstract class ReplayTestingEnvironment {
         host = null;
     }
 
+    protected void openReplayHeadless(String replayTitle) throws Exception {
+        
+    }
+
     /**
      * Load a replay while setting the RecordAndReplayStatus.
      * @param replayTitle the name of the replay to be loaded.
