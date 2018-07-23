@@ -60,7 +60,7 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
         replayThread.start();
         try {
 
-            while (RecordAndReplayStatus.getCurrentStatus() != RecordAndReplayStatus.REPLAYING) {
+            while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
                 Thread.sleep(1000); //wait for the replay to finish prepearing things before we get the data to test things.
             }
 
@@ -71,7 +71,7 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
             assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
 
             EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-            while (RecordAndReplayStatus.getCurrentStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
+            while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
                 //checks that after a certain point, the player is not on the starting position anymore.
                 if (eventSystem.getLastRecordedEventPosition() >= 1810) {
                     location = character.getComponent(LocationComponent.class);
@@ -93,7 +93,7 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
     public void testExampleRecordingBlockPlacement() {
         replayThread.start();
         try {
-            while (RecordAndReplayStatus.getCurrentStatus() != RecordAndReplayStatus.REPLAYING) {
+            while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
                 Thread.sleep(1000); //wait for the replay to finish prepearing things before we get the data to test things.
             }
             Vector3i blockLocation1 = new Vector3i(26, 12, -3);
@@ -106,7 +106,7 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
             assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Air");
             assertEquals(worldProvider.getBlock(blockLocation3).getDisplayName(), "Grass");
 
-            while (RecordAndReplayStatus.getCurrentStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
+            while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
                 Thread.sleep(1000);
             }//The replay is finished at this point
 
@@ -115,7 +115,6 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
             assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Grass");
             assertEquals(worldProvider.getBlock(blockLocation3).getDisplayName(), "Air");
         } catch (Exception e) {
-            System.out.println("EXCEPTION!");
             e.printStackTrace();
         }
     }

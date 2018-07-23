@@ -31,6 +31,7 @@ import org.terasology.engine.subsystem.lwjgl.LwjglTimer;
 import org.terasology.engine.subsystem.openvr.OpenVRInput;
 import org.terasology.game.GameManifest;
 import org.terasology.network.NetworkMode;
+import org.terasology.recording.RecordAndReplayCurrentStatus;
 import org.terasology.recording.RecordAndReplayStatus;
 import org.terasology.recording.RecordAndReplayUtils;
 import org.terasology.registry.CoreRegistry;
@@ -47,6 +48,8 @@ import java.util.List;
 public abstract class ReplayTestingEnvironment {
     private TerasologyEngine host;
     private List<TerasologyEngine> engines = Lists.newArrayList();
+    private RecordAndReplayCurrentStatus recordAndReplayCurrentStatus;
+    private boolean isInitialised;
 
     /**
      * Opens the game in the Main Menu.
@@ -65,6 +68,8 @@ public abstract class ReplayTestingEnvironment {
     protected void openReplay(String replayTitle) throws Exception {
         host = createEngine();
         host.initialize();
+        this.isInitialised = true;
+        recordAndReplayCurrentStatus = host.getFromEngineContext(RecordAndReplayCurrentStatus.class);
         host.changeState(new StateMainMenu());
         host.tick();
         loadReplay(replayTitle);
@@ -72,6 +77,11 @@ public abstract class ReplayTestingEnvironment {
         host.cleanup();
         engines = Lists.newArrayList();
         host = null;
+        this.isInitialised = false;
+    }
+
+    protected void openReplayHeadless(String replayTitle) throws Exception {
+        //TODO: Implement headless support for replay tests.
     }
 
     /**
@@ -80,7 +90,7 @@ public abstract class ReplayTestingEnvironment {
      * @throws Exception
      */
     private void loadReplay(String replayTitle) throws Exception {
-        RecordAndReplayStatus.setCurrentStatus(RecordAndReplayStatus.PREPARING_REPLAY);
+        recordAndReplayCurrentStatus.setStatus(RecordAndReplayStatus.PREPARING_REPLAY);
         GameInfo replayInfo = getReplayInfo(replayTitle);
         GameManifest manifest = replayInfo.getManifest();
         CoreRegistry.get(RecordAndReplayUtils.class).setGameTitle(manifest.getTitle());
@@ -148,6 +158,14 @@ public abstract class ReplayTestingEnvironment {
 
     protected TerasologyEngine getHost() {
         return this.host;
+    }
+
+    protected RecordAndReplayStatus getRecordAndReplayStatus() {
+        return this.recordAndReplayCurrentStatus.getStatus();
+    }
+
+    protected boolean isInitialised() {
+        return this.isInitialised;
     }
 
 
