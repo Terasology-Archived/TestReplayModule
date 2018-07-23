@@ -65,14 +65,14 @@ public class ReplayTestTemplate extends ReplayTestingEnvironment { //Every repla
             This 'while' is useful because when it is over it means everything in the replay was loaded, which means it
             is possible to test the replay's initial state, such as the player character's initial position.
              */
-            while (RecordAndReplayStatus.getCurrentStatus() != RecordAndReplayStatus.REPLAYING) {
+            while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
                 Thread.sleep(1000); //this sleep is optional and is used only to improve the game performance.
             }
 
             //the checks of initial states should be written here, between the 'while' statements.
 
             //The code inside this 'while' will execute while the replay is playing.
-            while (RecordAndReplayStatus.getCurrentStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
+            while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
                 //Tests can be written here to check something in the middle of a replay.
 
                 /*
