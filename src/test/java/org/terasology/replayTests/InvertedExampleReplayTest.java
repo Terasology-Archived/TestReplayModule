@@ -58,7 +58,7 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
             EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
             while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
                 //checks that after a certain point, the player is not on the starting position anymore.
-                if (eventSystem.getLastRecordedEventPosition() >= 1810) {
+                if (eventSystem.getLastRecordedEventIndex() >= 1810) {
                     location = character.getComponent(LocationComponent.class);
                     assertNotEquals(initialPosition, location.getLocalPosition());
                 }
@@ -132,6 +132,6 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
 
     private void startReplay() throws Exception {
         String replayTitle = "Example";
-        super.openReplay(replayTitle);
+        super.openReplayHeadless(replayTitle);
     }
 }

@@ -24,6 +24,12 @@ import org.terasology.engine.modes.StateMainMenu;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.config.BindsSubsystem;
+import org.terasology.engine.subsystem.headless.HeadlessAudio;
+import org.terasology.engine.subsystem.headless.HeadlessGraphics;
+import org.terasology.engine.subsystem.headless.HeadlessInput;
+import org.terasology.engine.subsystem.headless.HeadlessTimer;
+import org.terasology.engine.subsystem.headless.mode.HeadlessStateChangeListener;
+import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
 import org.terasology.engine.subsystem.lwjgl.LwjglAudio;
 import org.terasology.engine.subsystem.lwjgl.LwjglGraphics;
 import org.terasology.engine.subsystem.lwjgl.LwjglInput;
@@ -81,7 +87,18 @@ public abstract class ReplayTestingEnvironment {
     }
 
     protected void openReplayHeadless(String replayTitle) throws Exception {
-        //TODO: Implement headless support for replay tests.
+        host = createHeadlessEngine();
+        host.initialize();
+        this.isInitialised = true;
+        recordAndReplayCurrentStatus = host.getFromEngineContext(RecordAndReplayCurrentStatus.class);
+        host.changeState(new StateMainMenu());
+        //host.tick();
+        loadReplay(replayTitle);
+        mainLoop();
+        host.cleanup();
+        engines = Lists.newArrayList();
+        host = null;
+        this.isInitialised = false;
     }
 
     /**
@@ -124,6 +141,17 @@ public abstract class ReplayTestingEnvironment {
         engines.add(engine);
         return engine;
     }
+    //TODO: fix code replication
+    private TerasologyEngine createHeadlessEngine() throws Exception {
+        TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
+        populateHeadlessSubsystems(builder);
+        //Path homePath = Paths.get("");
+        Path homePath = Paths.get("modules/TestReplayModule/assets");
+        PathManager.getInstance().useOverrideHomePath(homePath);
+        TerasologyEngine engine = builder.build();
+        engines.add(engine);
+        return engine;
+    }
 
     /**
      * Populates the engine builder with headed subsystems.
@@ -136,6 +164,15 @@ public abstract class ReplayTestingEnvironment {
                 .add(new LwjglInput())
                 .add(new BindsSubsystem())
                 .add(new OpenVRInput());
+
+        builder.add(new HibernationSubsystem());
+    }
+
+    private void populateHeadlessSubsystems(TerasologyEngineBuilder builder) {
+        builder.add(new HeadlessGraphics())
+                .add(new HeadlessTimer())
+                .add(new HeadlessAudio())
+                .add(new HeadlessInput());
 
         builder.add(new HibernationSubsystem());
     }

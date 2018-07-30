@@ -33,7 +33,7 @@ public class WoodCutReplayTest extends ReplayTestingEnvironment {
         public void run() {
         try {
             String replayTitle = "Woodcut";
-            WoodCutReplayTest.super.openReplay(replayTitle);
+            WoodCutReplayTest.super.openReplayHeadless(replayTitle);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -53,6 +53,9 @@ public class WoodCutReplayTest extends ReplayTestingEnvironment {
 
             //checks the block initial type of two chunks that will be modified during the replay.
             WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
+            while (worldProvider.getBlock(blockLocation1).getDisplayName().equals("Unloaded")) {
+                Thread.sleep(1000);
+            }
             assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Oak Log");
             assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Oak Log");
 

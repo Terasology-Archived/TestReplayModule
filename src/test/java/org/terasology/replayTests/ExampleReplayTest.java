@@ -16,7 +16,6 @@
 package org.terasology.replayTests;
 
 import org.junit.After;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -41,7 +40,7 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
         public void run() {
             try {
                 String replayTitle = "Example";
-                ExampleReplayTest.super.openReplay(replayTitle);
+                ExampleReplayTest.super.openReplayHeadless(replayTitle);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -54,7 +53,6 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
         replayThread.join();
     }
 
-    @Ignore("These are headed tests and should be ignored by Jenkins.")
     @Test
     public void testExampleRecordingPlayerPosition() {
         replayThread.start();
@@ -65,6 +63,10 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
             }
 
             LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
+            while (!localPlayer.isValid()) {
+                Thread.sleep(1000);
+            }
+
             EntityRef character = localPlayer.getCharacterEntity();
             Vector3f initialPosition = new Vector3f(19.79358f, 13.511584f, 2.3982882f);
             LocationComponent location = character.getComponent(LocationComponent.class);
@@ -73,7 +75,7 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
             EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
             while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
                 //checks that after a certain point, the player is not on the starting position anymore.
-                if (eventSystem.getLastRecordedEventPosition() >= 1810) {
+                if (eventSystem.getLastRecordedEventIndex() >= 1810) {
                     location = character.getComponent(LocationComponent.class);
                     assertNotEquals(initialPosition, location.getLocalPosition());
                 }
@@ -88,7 +90,6 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
         }
     }
 
-    @Ignore("These are headed tests and should be ignored by Jenkins.")
     @Test
     public void testExampleRecordingBlockPlacement() {
         replayThread.start();
@@ -100,8 +101,12 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
             Vector3i blockLocation2 = new Vector3i(26, 13, -3);
             Vector3i blockLocation3 = new Vector3i(26, 12, -2);
 
-            //checks the block initial type of three chunks that will be modified during the replay.
             WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
+            while (worldProvider.getBlock(blockLocation1).getDisplayName().equals("Unloaded")) {
+                Thread.sleep(1000);
+            }
+
+            //checks the block initial type of three chunks that will be modified during the replay.
             assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Grass");
             assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Air");
             assertEquals(worldProvider.getBlock(blockLocation3).getDisplayName(), "Grass");

@@ -83,7 +83,7 @@ public class ReplayTestTemplate extends ReplayTestingEnvironment { //Every repla
                  */
                 /*
                 EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-                if (eventSystem.getLastRecordedEventPosition() >= 1000) {
+                if (eventSystem.getLastRecordedEventIndex() >= 1000) {
                     //test something
                 }
                 */
