@@ -16,6 +16,8 @@
 package org.terasology;
 
 import com.google.api.client.util.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.config.Config;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
@@ -28,8 +30,6 @@ import org.terasology.engine.subsystem.headless.HeadlessAudio;
 import org.terasology.engine.subsystem.headless.HeadlessGraphics;
 import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
-import org.terasology.engine.subsystem.headless.mode.HeadlessStateChangeListener;
-import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
 import org.terasology.engine.subsystem.lwjgl.LwjglAudio;
 import org.terasology.engine.subsystem.lwjgl.LwjglGraphics;
 import org.terasology.engine.subsystem.lwjgl.LwjglInput;
@@ -47,11 +47,13 @@ import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * A base class for replay tests to inherit to run a replay in a thread while testing some variables.
  */
 public abstract class ReplayTestingEnvironment {
+    private static final Logger logger = LoggerFactory.getLogger(ReplayTestingEnvironment.class);
     private TerasologyEngine host;
     private List<TerasologyEngine> engines = Lists.newArrayList();
     private RecordAndReplayCurrentStatus recordAndReplayCurrentStatus;
@@ -62,37 +64,23 @@ public abstract class ReplayTestingEnvironment {
      * @throws Exception
      */
     protected void openMainMenu() throws Exception {
-        host = createEngine();
+        host = createEngine(false);
         host.run(new StateMainMenu());
     }
 
     /**
-     * Opens the game in a replay.
-     * @param replayTitle the name of the replay to be played when the game opens.
+     * Opens the game in a replay state.
+     * @param replayTitle the title of the replay to be opened.
+     * @param isHeadless if the engine should be headless.
      * @throws Exception
      */
-    protected void openReplay(String replayTitle) throws Exception {
-        host = createEngine();
+    protected void openReplay(String replayTitle, boolean isHeadless) throws Exception {
+        host = createEngine(isHeadless);
         host.initialize();
         this.isInitialised = true;
         recordAndReplayCurrentStatus = host.getFromEngineContext(RecordAndReplayCurrentStatus.class);
         host.changeState(new StateMainMenu());
         host.tick();
-        loadReplay(replayTitle);
-        mainLoop();
-        host.cleanup();
-        engines = Lists.newArrayList();
-        host = null;
-        this.isInitialised = false;
-    }
-
-    protected void openReplayHeadless(String replayTitle) throws Exception {
-        host = createHeadlessEngine();
-        host.initialize();
-        this.isInitialised = true;
-        recordAndReplayCurrentStatus = host.getFromEngineContext(RecordAndReplayCurrentStatus.class);
-        host.changeState(new StateMainMenu());
-        //host.tick();
         loadReplay(replayTitle);
         mainLoop();
         host.cleanup();
@@ -127,25 +115,18 @@ public abstract class ReplayTestingEnvironment {
     }
 
     /**
-     * Creates a headed TerasologyEngine.
-     * @return the created engine
+     * Creates a TerasologyEngine.
+     * @param isHeadless if the engine should be headless.
+     * @return the created engine.
      * @throws Exception
      */
-    private TerasologyEngine createEngine() throws Exception {
+    private TerasologyEngine createEngine(boolean isHeadless) throws Exception {
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
-        populateSubsystems(builder);
-        //Path homePath = Paths.get("");
-        Path homePath = Paths.get("modules/TestReplayModule/assets");
-        PathManager.getInstance().useOverrideHomePath(homePath);
-        TerasologyEngine engine = builder.build();
-        engines.add(engine);
-        return engine;
-    }
-    //TODO: fix code replication
-    private TerasologyEngine createHeadlessEngine() throws Exception {
-        TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
-        populateHeadlessSubsystems(builder);
-        //Path homePath = Paths.get("");
+        if (isHeadless) {
+            populateHeadlessSubsystems(builder);
+        } else {
+            populateHeadedSubsystems(builder);
+        }
         Path homePath = Paths.get("modules/TestReplayModule/assets");
         PathManager.getInstance().useOverrideHomePath(homePath);
         TerasologyEngine engine = builder.build();
@@ -157,7 +138,7 @@ public abstract class ReplayTestingEnvironment {
      * Populates the engine builder with headed subsystems.
      * @param builder the builder to be populated.
      */
-    private void populateSubsystems(TerasologyEngineBuilder builder) {
+    private void populateHeadedSubsystems(TerasologyEngineBuilder builder) {
         builder.add(new LwjglAudio())
                 .add(new LwjglGraphics())
                 .add(new LwjglTimer())
@@ -168,6 +149,10 @@ public abstract class ReplayTestingEnvironment {
         builder.add(new HibernationSubsystem());
     }
 
+    /**
+     * Populates the engine builder with headless subsystems.
+     * @param builder the builder to be populated.
+     */
     private void populateHeadlessSubsystems(TerasologyEngineBuilder builder) {
         builder.add(new HeadlessGraphics())
                 .add(new HeadlessTimer())
@@ -205,6 +190,13 @@ public abstract class ReplayTestingEnvironment {
         return this.isInitialised;
     }
 
-
-
+    protected void waitUntil(BooleanSupplier supplier) {
+        try {
+            while (!supplier.getAsBoolean()) {
+                Thread.sleep(1000);
+            }
+        } catch (Exception e) {
+            logger.error("Error has occurred in the waitUntil method: ", e);
+        }
+    }
 }

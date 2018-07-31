@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.replayTests;
+package org.terasology.replayTests.examples;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
 import org.terasology.entitySystem.entity.EntityRef;
@@ -45,25 +44,19 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
         @Override
         public void run() {
         try {
-            while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
-                Thread.sleep(1000); //wait for the replay to finish prepearing things before we get the data to test things.
-            }
-
+            waitUntil(() -> (isInitialised() && getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
             LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
+            waitUntil(() -> localPlayer.isValid());
             EntityRef character = localPlayer.getCharacterEntity();
             Vector3f initialPosition = new Vector3f(19.79358f, 13.511584f, 2.3982882f);
             LocationComponent location = character.getComponent(LocationComponent.class);
             assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
 
             EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-            while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
-                //checks that after a certain point, the player is not on the starting position anymore.
-                if (eventSystem.getLastRecordedEventIndex() >= 1810) {
-                    location = character.getComponent(LocationComponent.class);
-                    assertNotEquals(initialPosition, location.getLocalPosition());
-                }
-                Thread.sleep(1000);
-            }//The replay is finished at this point
+            waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810); // tests in the middle of a replay needs "checkpoints" like this.
+            location = character.getComponent(LocationComponent.class);
+            assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
+            waitUntil(() -> getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
 
             location = character.getComponent(LocationComponent.class);
             Vector3f finalPosition = new Vector3f(25.189344f, 13.406443f, 8.6651945f);
@@ -80,22 +73,19 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
         @Override
         public void run() {
             try {
-                while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
-                    Thread.sleep(1000); //wait for the replay to finish prepearing things before we get the data to test things.
-                }
+                waitUntil(() -> (isInitialised() && getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
                 Vector3i blockLocation1 = new Vector3i(26, 12, -3);
                 Vector3i blockLocation2 = new Vector3i(26, 13, -3);
                 Vector3i blockLocation3 = new Vector3i(26, 12, -2);
 
                 //checks the block initial type of three chunks that will be modified during the replay.
                 WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
+                waitUntil(() -> (!(worldProvider.getBlock(blockLocation1).getDisplayName().equals("Unloaded"))));
                 assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Grass");
                 assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Air");
                 assertEquals(worldProvider.getBlock(blockLocation3).getDisplayName(), "Grass");
 
-                while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
-                    Thread.sleep(1000);
-                }//The replay is finished at this point
+                waitUntil(() -> getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
 
                 //checks the same blocks again after the replay.
                 assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Grass");
@@ -108,7 +98,6 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
         }
     };
 
-    @Ignore("These are headed tests and should be ignored by Jenkins.")
     @Test
     public void test1() {
         try {
@@ -119,7 +108,6 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
         }
     }
 
-    @Ignore("These are headed tests and should be ignored by Jenkins.")
     @Test
     public void test2() {
         try {
@@ -132,6 +120,6 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
 
     private void startReplay() throws Exception {
         String replayTitle = "Example";
-        super.openReplayHeadless(replayTitle);
+        super.openReplay(replayTitle, true);
     }
 }

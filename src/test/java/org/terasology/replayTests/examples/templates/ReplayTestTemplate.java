@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.replayTests.templates;
+package org.terasology.replayTests.examples.templates;
 
 
 import org.junit.After;
@@ -27,7 +27,7 @@ import org.terasology.recording.RecordAndReplayStatus;
  * This is a template with comments to aid in the creation of a replay test.
  * For more information about Replay Tests, see https://github.com/MovingBlocks/Terasology/wiki/Replay-Tests
  */
-public class ReplayTestTemplate extends ReplayTestingEnvironment { //Every replay test should extend ReplayTestingEnvironment
+public class ReplayTestTemplate extends ReplayTestingEnvironment { //Replay tests should extend ReplayTestingEnvironment
 
     /*
      * To test the replay while it is executing, it is necessary to create threads which will run the replays.
@@ -40,8 +40,12 @@ public class ReplayTestTemplate extends ReplayTestingEnvironment { //Every repla
                 //This is the title of the replay to be played. It is generally the name of the folder in the 'recordings' directory.
                 String replayTitle = "REPLAY_TITLE";
 
-                //This executes the game opening the replay desired for testing. It is always 'TEST_CLASS_NAME.super.openReplay(replayTitle)' .
-                ReplayTestTemplate.super.openReplay(replayTitle);
+                /*
+                This opens the game and execute the replay desired for testing. It is always
+                'TEST_CLASS_NAME.super.openReplay'. The first parameter of this method is the replay title,
+                and the second one is if the replay should be headless.
+                 */
+                ReplayTestTemplate.super.openReplay(replayTitle, true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -62,35 +66,22 @@ public class ReplayTestTemplate extends ReplayTestingEnvironment { //Every repla
         try {
 
             /*
-            This 'while' is useful because when it is over it means everything in the replay was loaded, which means it
+            This 'waitUntil' is useful because when it is over it means the replay was loaded, which means it
             is possible to test the replay's initial state, such as the player character's initial position.
              */
-            while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
-                Thread.sleep(1000); //this sleep is optional and is used only to improve the game performance.
-            }
+            waitUntil(() -> (isInitialised() && getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
+            //the checks of initial states should be written here, between the 'waitUntil' statements.
 
-            //the checks of initial states should be written here, between the 'while' statements.
+            //to test things in the middle of a replay, checks can be written between the 'waitUntils'
+            //Example of a test in the middle of a replay:
+            /*
+            EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
+            waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810);
+            location = character.getComponent(LocationComponent.class);
+            assertNotEquals(initialPosition, location.getLocalPosition());
+             */
 
-            //The code inside this 'while' will execute while the replay is playing.
-            while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
-                //Tests can be written here to check something in the middle of a replay.
-
-                /*
-                Example of test: The test in the comment below gets the event system and checks if the RecordedEvent of
-                number 1000 was already processed. If it was, it tests something. This is useful to test, for example,
-                if a block disappeared after its destruction, if the player location changed after a certain movement
-                event was sent.
-                 */
-                /*
-                EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-                if (eventSystem.getLastRecordedEventIndex() >= 1000) {
-                    //test something
-                }
-                */
-
-                //this sleep is optional and is used only to improve the game performance.
-                Thread.sleep(1000);
-            }
+            waitUntil(() -> getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
             //tests can be written here to test something at the end of a replay.
         } catch (Exception e) {
             e.printStackTrace();

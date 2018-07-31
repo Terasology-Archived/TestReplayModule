@@ -15,7 +15,6 @@
  */
 package org.terasology.replayTests;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
 import org.terasology.math.geom.Vector3i;
@@ -33,35 +32,30 @@ public class WoodCutReplayTest extends ReplayTestingEnvironment {
         public void run() {
         try {
             String replayTitle = "Woodcut";
-            WoodCutReplayTest.super.openReplayHeadless(replayTitle);
+            WoodCutReplayTest.super.openReplay(replayTitle, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
         }
     };
 
-    @Ignore("These are headed tests and should be ignored by Jenkins.")
     @Test
     public void testWoodcut() {
         replayThread.start();
         try {
-            while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
-                Thread.sleep(1000); //wait for the replay to finish prepearing things before we get the data to test things.
-            }
+            waitUntil(() -> (isInitialised() && getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
             Vector3i blockLocation1 = new Vector3i(-73, 43, 84);
             Vector3i blockLocation2 = new Vector3i(-73, 44, 84);
 
-            //checks the block initial type of two chunks that will be modified during the replay.
+            //waits for the chunks to be loaded properly
             WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
-            while (worldProvider.getBlock(blockLocation1).getDisplayName().equals("Unloaded")) {
-                Thread.sleep(1000);
-            }
+            waitUntil(() -> (!(worldProvider.getBlock(blockLocation1).getDisplayName().equals("Unloaded"))));
+
+            //checks the block initial type of two chunks that will be modified during the replay.
             assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Oak Log");
             assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Oak Log");
 
-            while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
-                Thread.sleep(1000);
-            }//The replay is finished at this point
+            waitUntil(() -> getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
 
             //checks the same blocks again after the replay.
             assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Air");
