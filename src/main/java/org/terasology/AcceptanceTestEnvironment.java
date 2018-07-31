@@ -17,6 +17,7 @@ package org.terasology;
 
 import org.junit.After;
 import org.junit.Test;
+import org.terasology.engine.GameThread;
 import org.terasology.recording.RecordAndReplayStatus;
 
 /**
@@ -46,6 +47,7 @@ public abstract class AcceptanceTestEnvironment extends ReplayTestingEnvironment
     @After
     public void closeReplay() throws Exception {
         super.getHost().shutdown();
+        GameThread.reset();
         replayThread.join();
     }
 

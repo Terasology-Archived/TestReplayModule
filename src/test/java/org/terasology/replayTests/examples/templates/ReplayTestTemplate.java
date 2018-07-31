@@ -20,6 +20,7 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
+import org.terasology.engine.GameThread;
 import org.terasology.recording.RecordAndReplayStatus;
 
 
@@ -54,8 +55,9 @@ public class ReplayTestTemplate extends ReplayTestingEnvironment { //Replay test
 
     @After
     public void closeReplay() throws Exception {
-        //these last two lines are important to correctly shutdown the game after the tests are done.
+        //these last three lines are important to correctly shutdown the game after the tests are done.
         super.getHost().shutdown();
+        GameThread.reset();
         replayThread.join();
     }
 

@@ -17,6 +17,7 @@ package org.terasology.replayTests.examples;
 
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
+import org.terasology.engine.GameThread;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.internal.EventSystem;
 import org.terasology.logic.location.LocationComponent;
@@ -62,6 +63,7 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
             Vector3f finalPosition = new Vector3f(25.189344f, 13.406443f, 8.6651945f);
             assertEquals(finalPosition, location.getLocalPosition()); // checks final position
             InvertedExampleReplayTest.super.getHost().shutdown();
+            GameThread.reset();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -92,6 +94,7 @@ public class InvertedExampleReplayTest extends ReplayTestingEnvironment {
                 assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Grass");
                 assertEquals(worldProvider.getBlock(blockLocation3).getDisplayName(), "Air");
                 InvertedExampleReplayTest.super.getHost().shutdown();
+                GameThread.reset();
             } catch (Exception e) {
                 e.printStackTrace();
             }

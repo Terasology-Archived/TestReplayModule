@@ -15,8 +15,10 @@
  */
 package org.terasology.replayTests;
 
+import org.junit.After;
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
+import org.terasology.engine.GameThread;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.recording.RecordAndReplayStatus;
 import org.terasology.registry.CoreRegistry;
@@ -38,6 +40,13 @@ public class WoodCutReplayTest extends ReplayTestingEnvironment {
         }
         }
     };
+
+    @After
+    public void closeReplay() throws Exception {
+        super.getHost().shutdown();
+        GameThread.reset();
+        replayThread.join();
+    }
 
     @Test
     public void testWoodcut() {

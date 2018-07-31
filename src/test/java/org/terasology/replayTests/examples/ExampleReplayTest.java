@@ -18,6 +18,7 @@ package org.terasology.replayTests.examples;
 import org.junit.After;
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
+import org.terasology.engine.GameThread;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.internal.EventSystem;
 import org.terasology.logic.location.LocationComponent;
@@ -50,6 +51,7 @@ public class ExampleReplayTest extends ReplayTestingEnvironment {
     @After
     public void closeReplay() throws Exception {
         super.getHost().shutdown();
+        GameThread.reset();
         replayThread.join();
     }
 
