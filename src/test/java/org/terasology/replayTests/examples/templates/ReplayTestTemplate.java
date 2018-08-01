@@ -23,16 +23,17 @@ import org.terasology.ReplayTestingEnvironment;
 import org.terasology.engine.GameThread;
 import org.terasology.recording.RecordAndReplayStatus;
 
+import java.util.function.BooleanSupplier;
+
 
 /**
  * This is a template with comments to aid in the creation of a replay test.
  * For more information about Replay Tests, see https://github.com/MovingBlocks/Terasology/wiki/Replay-Tests
+ * Replay tests should extend ReplayTestingEnvironment directly or indirectly.
  */
-public class ReplayTestTemplate extends ReplayTestingEnvironment { //Replay tests should extend ReplayTestingEnvironment
+public class ReplayTestTemplate extends ReplayTestingEnvironment {
 
-    /*
-     * To test the replay while it is executing, it is necessary to create threads which will run the replays.
-     */
+    /** To test the replay while it is executing, it is necessary to create a thread that will run the replay. */
     private Thread replayThread = new Thread() {
 
         @Override
@@ -61,30 +62,31 @@ public class ReplayTestTemplate extends ReplayTestingEnvironment { //Replay test
         replayThread.join();
     }
 
+    /**
+     * Template of a method that tests a Replay.
+     * <p>
+     * <h2>Code Explanation<h2/> Replay Tests should always start the thread that will initialise the game and run the
+     * replay. After that, a try-catch block should be opened and inside it there should be two important calls to
+     * {@link #waitUntil(BooleanSupplier)}. The first call waits for the replay to be loaded, and checks that tests
+     * something in the beginning of a replay should be written right after it. The second call waits for the replay to
+     * end, therefore checks that test something in the end of a replay should be written right after it. It is also
+     * possible to test something in the middle of a replay, but for that it is necessary to put "checkpoints" with
+     * {@link #waitUntil(BooleanSupplier)} between the two {@link #waitUntil(BooleanSupplier)} for that.
+     * <p>
+     * <h2>Example of Test in the middle of a Replay<h2/>
+     * EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
+     * waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810);
+     * location = character.getComponent(LocationComponent.class);
+     * assertNotEquals(initialPosition, location.getLocalPosition());
+     */
     @Ignore("This is just a template and should be ignored by Jenkins.")
     @Test
     public void testTemplate() {
-        replayThread.start(); //always start the thread before the test, so the replay can execute.
+        replayThread.start();
         try {
-
-            /*
-            This 'waitUntil' is useful because when it is over it means the replay was loaded, which means it
-            is possible to test the replay's initial state, such as the player character's initial position.
-             */
             waitUntil(() -> (isInitialised() && getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
-            //the checks of initial states should be written here, between the 'waitUntil' statements.
-
-            //to test things in the middle of a replay, checks can be written between the 'waitUntils'
-            //Example of a test in the middle of a replay:
-            /*
-            EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-            waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810);
-            location = character.getComponent(LocationComponent.class);
-            assertNotEquals(initialPosition, location.getLocalPosition());
-             */
 
             waitUntil(() -> getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
-            //tests can be written here to test something at the end of a replay.
         } catch (Exception e) {
             e.printStackTrace();
         }

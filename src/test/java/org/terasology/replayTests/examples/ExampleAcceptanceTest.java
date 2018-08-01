@@ -37,7 +37,6 @@ public class ExampleAcceptanceTest extends AcceptanceTestEnvironment {
     private Vector3f initialPosition;
 
     @Test
-    @Override
     public void run() {
         runTest("Example", true);
     }

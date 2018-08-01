@@ -21,16 +21,22 @@ import org.terasology.engine.GameThread;
 import org.terasology.recording.RecordAndReplayStatus;
 
 /**
- * An environment responsible for setting up the workflow of a ReplayTest used in acceptance tests.
+ * An environment that extends {@link ReplayTestingEnvironment} and sets the workflow of a replay test used for
+ * acceptance testing. The tests that extends this class instead of {@link ReplayTestingEnvironment} will be more limited
+ * but easier to write.
+ * <p>
+ * To write tests that uses this class, it is necessary to extend it and fill the three abstract methods {@link #testOnReplayStart()} ,
+ * {@link #testDuringReplay()} and {@link #testOnReplayEnd()} . If it is not desired to test something in one or more of
+ * the replay stages, it is possible to leave the methods in black.
+ * <p>
+ * After the implementation of the abstract methods, it is necessary to write a test method that calls {@link #runTest(String, boolean)} .
  */
 public abstract class AcceptanceTestEnvironment extends ReplayTestingEnvironment {
 
     private String recordingTitle;
     private boolean isHeadless;
 
-    /*
-     * To test the replay while it is executing, it is necessary to create a thread that will run the replay.
-     */
+    /** To test the replay while it is executing, it is necessary to create a thread that will run the replay. */
     private Thread replayThread = new Thread() {
 
         @Override
@@ -50,12 +56,6 @@ public abstract class AcceptanceTestEnvironment extends ReplayTestingEnvironment
         GameThread.reset();
         replayThread.join();
     }
-
-    /**
-     * This method should have the @Test tag and it should call the "runTest" method.
-     */
-    @Test
-    public abstract void run();
 
     /**
      * Executes the replay test.

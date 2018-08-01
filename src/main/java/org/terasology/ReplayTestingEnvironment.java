@@ -50,7 +50,21 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 
 /**
- * A base class for replay tests to inherit to run a replay in a thread while testing some variables.
+ * A base class for tests involving a full {@link TerasologyEngine} instance that runs a replay. View the tests in the
+ * "examples" package for simple usage examples.
+ * <p>
+ * Classes that extend this one can initialize an engine through two methods: {@link #openMainMenu()} or {@link #openReplay(String, boolean)}.
+ * The openMainMenu() method initializes a headed engine and opens the game in the main menu, while the openReplay(String, boolean)
+ * initialises an engine and right after its initialisation, opens a replay. The engine of the later can be either headed
+ * or headless.
+ * <p>
+ * It is possible to get the engine through the {@link #getHost()} method, the {@link RecordAndReplayCurrentStatus}'s
+ * status through the {@link #getRecordAndReplayStatus()} method and if the host engine was initialized through the
+ * {@link #isInitialised()} method.
+ * <p>
+ * The last protected method is {@link #waitUntil(BooleanSupplier)} which is generally used to wait for the replay to get
+ * to a certain point so something can be tested at the right moment.
+ *
  */
 public abstract class ReplayTestingEnvironment {
     private static final Logger logger = LoggerFactory.getLogger(ReplayTestingEnvironment.class);
@@ -115,7 +129,7 @@ public abstract class ReplayTestingEnvironment {
     }
 
     /**
-     * Creates a TerasologyEngine.
+     * Creates a full headed or headless TerasologyEngine. The homePath for this engine is the module's "assets" folder.
      * @param isHeadless if the engine should be headless.
      * @return the created engine.
      * @throws Exception
