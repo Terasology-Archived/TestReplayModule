@@ -15,9 +15,11 @@
  */
 package org.terasology.replayTests;
 
-import org.junit.Ignore;
+import org.junit.After;
 import org.junit.Test;
 import org.terasology.ReplayTestingEnvironment;
+import org.terasology.TestUtils;
+import org.terasology.engine.GameThread;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.recording.RecordAndReplayStatus;
 import org.terasology.registry.CoreRegistry;
@@ -25,7 +27,9 @@ import org.terasology.world.WorldProvider;
 
 import static org.junit.Assert.assertEquals;
 
-public class WoodCutReplayTest extends ReplayTestingEnvironment {
+public class WoodCutReplayTest {
+
+    private ReplayTestingEnvironment environment = new ReplayTestingEnvironment();
 
     private Thread replayThread = new Thread() {
 
@@ -33,38 +37,40 @@ public class WoodCutReplayTest extends ReplayTestingEnvironment {
         public void run() {
         try {
             String replayTitle = "Woodcut";
-            WoodCutReplayTest.super.openReplay(replayTitle);
+            environment.openReplay(replayTitle, true);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         }
     };
 
-    @Ignore("These are headed tests and should be ignored by Jenkins.")
+    @After
+    public void closeReplay() throws Exception {
+        environment.getHost().shutdown();
+        GameThread.reset();
+        replayThread.join();
+    }
+
     @Test
     public void testWoodcut() {
         replayThread.start();
-        try {
-            while (!isInitialised() || getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAYING) {
-                Thread.sleep(1000); //wait for the replay to finish prepearing things before we get the data to test things.
-            }
-            Vector3i blockLocation1 = new Vector3i(-73, 43, 84);
-            Vector3i blockLocation2 = new Vector3i(-73, 44, 84);
 
-            //checks the block initial type of two chunks that will be modified during the replay.
-            WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
-            assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Oak Log");
-            assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Oak Log");
+        TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
+        Vector3i blockLocation1 = new Vector3i(-73, 43, 84);
+        Vector3i blockLocation2 = new Vector3i(-73, 44, 84);
 
-            while (getRecordAndReplayStatus() != RecordAndReplayStatus.REPLAY_FINISHED) {
-                Thread.sleep(1000);
-            }//The replay is finished at this point
+        //waits for the chunks to be loaded properly
+        WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
+        TestUtils.waitUntil(() -> (!(worldProvider.getBlock(blockLocation1).getDisplayName().equals("Unloaded"))));
 
-            //checks the same blocks again after the replay.
-            assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Air");
-            assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Air");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //checks the block initial type of two chunks that will be modified during the replay.
+        assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Oak Log");
+        assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Oak Log");
+
+        TestUtils.waitUntil(() -> environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
+
+        //checks the same blocks again after the replay.
+        assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Air");
+        assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Air");
     }
 }

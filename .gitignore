@@ -15,3 +15,11 @@ build/
 
 # MacOS Specific
 .DS_Store
+
+#Ignore Unecessary Output
+/assets/screenshots/
+/assets/blacklist.json
+/assets/whitelist.json
+/assets/config.cfg
+/assets/saves
+
