@@ -17,6 +17,7 @@ package org.terasology.replayTests.examples;
 
 import org.junit.Test;
 import org.terasology.AcceptanceTestEnvironment;
+import org.terasology.TestUtils;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.internal.EventSystem;
 import org.terasology.logic.location.LocationComponent;
@@ -37,14 +38,14 @@ public class ExampleAcceptanceTest extends AcceptanceTestEnvironment {
     private Vector3f initialPosition;
 
     @Test
-    public void run() {
+    public void run() throws Exception {
         runTest("Example", true);
     }
 
     @Override
     protected void testOnReplayStart() throws Exception {
         LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
-        waitUntil(() -> localPlayer.isValid());
+        TestUtils.waitUntil(() -> localPlayer.isValid());
         character = localPlayer.getCharacterEntity();
         initialPosition = new Vector3f(19.79358f, 13.511584f, 2.3982882f);
         LocationComponent location = character.getComponent(LocationComponent.class);
@@ -55,7 +56,7 @@ public class ExampleAcceptanceTest extends AcceptanceTestEnvironment {
     @Override
     protected void testDuringReplay() throws Exception {
         EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-        waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810); // tests in the middle of a replay needs "checkpoints" like this.
+        TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810); // tests in the middle of a replay needs "checkpoints" like this.
         LocationComponent location = character.getComponent(LocationComponent.class);
         assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
     }

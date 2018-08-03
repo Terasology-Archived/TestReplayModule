@@ -16,25 +16,22 @@
 package org.terasology;
 
 import org.junit.After;
-import org.junit.Test;
 import org.terasology.engine.GameThread;
 import org.terasology.recording.RecordAndReplayStatus;
 
 /**
  * An environment that extends {@link ReplayTestingEnvironment} and sets the workflow of a replay test used for
- * acceptance testing. The tests that extends this class instead of {@link ReplayTestingEnvironment} will be more limited
- * but easier to write.
+ * acceptance testing.
  * <p>
- * To write tests that uses this class, it is necessary to extend it and fill the three abstract methods {@link #testOnReplayStart()} ,
- * {@link #testDuringReplay()} and {@link #testOnReplayEnd()} . If it is not desired to test something in one or more of
- * the replay stages, it is possible to leave the methods in black.
- * <p>
- * After the implementation of the abstract methods, it is necessary to write a test method that calls {@link #runTest(String, boolean)} .
+ * To write tests that uses this class, it is necessary to extend it, write implementations for the abstract methods and
+ * write a test method that calls {@link #runTest(String, boolean)}. For more information about the abstract methods and
+ * example of implementation, check their JavaDoc and the ExampleAcceptanceTest class.
  */
-public abstract class AcceptanceTestEnvironment extends ReplayTestingEnvironment {
+public abstract class AcceptanceTestEnvironment {
 
     private String recordingTitle;
     private boolean isHeadless;
+    private ReplayTestingEnvironment environment = new ReplayTestingEnvironment();
 
     /** To test the replay while it is executing, it is necessary to create a thread that will run the replay. */
     private Thread replayThread = new Thread() {
@@ -43,16 +40,16 @@ public abstract class AcceptanceTestEnvironment extends ReplayTestingEnvironment
         public void run() {
             try {
                 String replayTitle = recordingTitle;
-                AcceptanceTestEnvironment.super.openReplay(replayTitle, isHeadless);
+                environment.openReplay(replayTitle, isHeadless);
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
     };
 
     @After
     public void closeReplay() throws Exception {
-        super.getHost().shutdown();
+        environment.getHost().shutdown();
         GameThread.reset();
         replayThread.join();
     }
@@ -62,35 +59,66 @@ public abstract class AcceptanceTestEnvironment extends ReplayTestingEnvironment
      * @param replayTitle the title of the replay.
      * @param headless if the engine should be headless.
      */
-    protected void runTest(String replayTitle, boolean headless) {
+    protected void runTest(String replayTitle, boolean headless) throws Exception {
         this.isHeadless = headless;
         this.recordingTitle = replayTitle;
         replayThread.start();
-        try {
-            waitUntil(() -> (isInitialised() && getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
-            testOnReplayStart();
-            testDuringReplay();
-            waitUntil(() -> getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
-            testOnReplayEnd();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
+        testOnReplayStart();
+        testDuringReplay();
+        TestUtils.waitUntil(() -> environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
+        testOnReplayEnd();
     }
 
     /**
-     * Tests that are executed right after the replay is loaded.
+     * @return the ReplayTestingEnvironment that creates and executes a TerasologyEngine.
+     */
+    protected ReplayTestingEnvironment getEnvironment() {
+        return this.environment;
+    }
+
+    /**
+     * This method is executed by {@link #runTest(String, boolean)} right after the record and replay status is set to
+     * REPLAYING, right after the replay is loaded. Therefore, this method should contain tests that checks values in the
+     * beginning of a replay, such as the player's initial position. Example:
+     * <pre>   {@code
+     * LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
+     * TestUtils.waitUntil(() -> localPlayer.isValid());
+     * character = localPlayer.getCharacterEntity();
+     * initialPosition = new Vector3f(19.79358f, 13.511584f, 2.3982882f);
+     * LocationComponent location = character.getComponent(LocationComponent.class);
+     * assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
+     * }</pre>
+     * If desired, this method can be left in blank.
      * @throws Exception
      */
     protected abstract void testOnReplayStart() throws Exception;
 
     /**
-     * Tests that are executed when the replay is on execution.
+     * This method is executed by {@link #runTest(String, boolean)} right after {@link #testOnReplayStart()} is called,
+     * which means that the replay status is REPLAYING. This method should contain "checkpoints" created with "waitUntil"
+     * to check some values after certain events are sent during a replay. Example:
+     * <pre>   {@code
+     * EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
+     * TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810); // tests in the middle of a replay needs "checkpoints" like this.
+     * LocationComponent location = character.getComponent(LocationComponent.class);
+     * assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
+     * }</pre>
+     * If desired, this method can be left in blank.
      * @throws Exception
      */
     protected abstract void testDuringReplay() throws Exception;
 
     /**
-     * Tests that are executed when the replay ends.
+     * This method is executed by {@link #runTest(String, boolean)} right after the record and replay status is set to
+     * REPLAY_FINISHED, right after the replay ends. Therefore, this method should contain tests that checks values in the
+     * end of a replay, such as the player's final position. Example:
+     * <pre>   {@code
+     * LocationComponent location = character.getComponent(LocationComponent.class);
+     * Vector3f finalPosition = new Vector3f(25.189344f, 13.406443f, 8.6651945f);
+     * assertEquals(finalPosition, location.getLocalPosition()); // checks final position
+     * }</pre>
+     * If desired, this method can be left in blank.
      * @throws Exception
      */
     protected abstract void testOnReplayEnd() throws Exception;

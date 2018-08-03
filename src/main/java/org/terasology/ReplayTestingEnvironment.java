@@ -16,8 +16,6 @@
 package org.terasology;
 
 import com.google.api.client.util.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.config.Config;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
@@ -47,27 +45,70 @@ import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 /**
- * A base class for tests involving a full {@link TerasologyEngine} instance that runs a replay. View the tests in the
- * "examples" package for simple usage examples.
+ * A base class for tests involving a full {@link TerasologyEngine} instance that runs a replay. For a better understanding
+ * of how to use this class, check the wiki page https://github.com/MovingBlocks/Terasology/wiki/Replay-Tests and also
+ * the class ExampleReplayTest.
  * <p>
- * Classes that extend this one can initialize an engine through two methods: {@link #openMainMenu()} or {@link #openReplay(String, boolean)}.
+ * This class can initialize an engine through two methods: {@link #openMainMenu()} or {@link #openReplay(String, boolean)}.
  * The openMainMenu() method initializes a headed engine and opens the game in the main menu, while the openReplay(String, boolean)
  * initialises an engine and right after its initialisation, opens a replay. The engine of the later can be either headed
  * or headless.
  * <p>
- * It is possible to get the engine through the {@link #getHost()} method, the {@link RecordAndReplayCurrentStatus}'s
- * status through the {@link #getRecordAndReplayStatus()} method and if the host engine was initialized through the
- * {@link #isInitialised()} method.
- * <p>
- * The last protected method is {@link #waitUntil(BooleanSupplier)} which is generally used to wait for the replay to get
- * to a certain point so something can be tested at the right moment.
+ * <h2>Example of Usage<h2/> Generally this class is an attribute of a ReplayTest, and it is used to create an engine and
+ * run a replay inside a thread: <pre>   {@code
+ *     private ReplayTestingEnvironment environment = new ReplayTestingEnvironment();
  *
+ *     private Thread replayThread = new Thread() {
+ *
+ *         @Override
+ *         public void run() {
+ *             try {
+ *                 String replayTitle = "Example";
+ *                 environment.openReplay(replayTitle, true);
+ *             } catch (Exception e) {
+ *                 throw new RuntimeException(e);
+ *             }
+ *         }
+ *     };
+ * }</pre>
+ *
+ * The thread is used inside a test method to run the game. Besides running the game, this class is important to replay
+ * tests since it contains the Record and Replay current status that can be obtained through {@link #getRecordAndReplayStatus()},
+ * which is used to know in which state the Replay is, so checks can be done on different stages of a replay. Checks are
+ * usually done right after the Replay Status changes from PREPEARING_REPLAY to REPLAYING, during the duration of the
+ * REPLAYING status and also when the replay ends and the status is set to REPLAY_FINISHED. Example:
+ *
+ * <pre>   {@code
+ *
+ *     @Test
+ *     public void testExampleRecordingPlayerPosition() {
+ *         replayThread.start();
+ *
+ *         TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
+ *         LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
+ *         TestUtils.waitUntil(() -> localPlayer.isValid()); //waits for the local player to be loaded
+ *
+ *         EntityRef character = localPlayer.getCharacterEntity();
+ *         Vector3f initialPosition = new Vector3f(19.79358f, 13.511584f, 2.3982882f);
+ *         LocationComponent location = character.getComponent(LocationComponent.class);
+ *         assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
+ *
+ *         EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
+ *         TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810); // tests in the middle of a replay needs "checkpoints" like this.
+ *         location = character.getComponent(LocationComponent.class);
+ *         assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
+ *         TestUtils.waitUntil(() -> environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
+ *
+ *         location = character.getComponent(LocationComponent.class);
+ *         Vector3f finalPosition = new Vector3f(25.189344f, 13.406443f, 8.6651945f);
+ *         assertEquals(finalPosition, location.getLocalPosition()); // checks final position
+ *     }
+ *
+ * }</pre>
  */
-public abstract class ReplayTestingEnvironment {
-    private static final Logger logger = LoggerFactory.getLogger(ReplayTestingEnvironment.class);
+public class ReplayTestingEnvironment {
     private TerasologyEngine host;
     private List<TerasologyEngine> engines = Lists.newArrayList();
     private RecordAndReplayCurrentStatus recordAndReplayCurrentStatus;
@@ -77,18 +118,19 @@ public abstract class ReplayTestingEnvironment {
      * Opens the game in the Main Menu.
      * @throws Exception
      */
-    protected void openMainMenu() throws Exception {
+    public void openMainMenu() throws Exception {
         host = createEngine(false);
         host.run(new StateMainMenu());
     }
 
     /**
-     * Opens the game in a replay state.
+     * Creates a headless or headed {@link TerasologyEngine} and uses it to open the game in a replay state.
+     * It is important to know that Jenkins cannot execute tests that uses a headed engine.
      * @param replayTitle the title of the replay to be opened.
      * @param isHeadless if the engine should be headless.
      * @throws Exception
      */
-    protected void openReplay(String replayTitle, boolean isHeadless) throws Exception {
+    public void openReplay(String replayTitle, boolean isHeadless) throws Exception {
         host = createEngine(isHeadless);
         host.initialize();
         this.isInitialised = true;
@@ -192,25 +234,15 @@ public abstract class ReplayTestingEnvironment {
         throw new Exception("No replay found with this title: " + title);
     }
 
-    protected TerasologyEngine getHost() {
+    public TerasologyEngine getHost() {
         return this.host;
     }
 
-    protected RecordAndReplayStatus getRecordAndReplayStatus() {
+    public RecordAndReplayStatus getRecordAndReplayStatus() {
         return this.recordAndReplayCurrentStatus.getStatus();
     }
 
-    protected boolean isInitialised() {
+    public boolean isInitialised() {
         return this.isInitialised;
-    }
-
-    protected void waitUntil(BooleanSupplier supplier) {
-        try {
-            while (!supplier.getAsBoolean()) {
-                Thread.sleep(1000);
-            }
-        } catch (Exception e) {
-            logger.error("Error has occurred in the waitUntil method: ", e);
-        }
     }
 }
