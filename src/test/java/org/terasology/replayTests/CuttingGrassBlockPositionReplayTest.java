@@ -27,7 +27,7 @@ import org.terasology.world.WorldProvider;
 
 import static org.junit.Assert.assertEquals;
 
-public class CuttingGrassReplayTest {
+public class CuttingGrassBlockPositionReplayTest {
 
     private ReplayTestingEnvironment environment = new ReplayTestingEnvironment();
 

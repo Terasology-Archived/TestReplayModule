@@ -29,7 +29,7 @@ import org.terasology.registry.CoreRegistry;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-public class CuttingGrassAcceptanceTest extends AcceptanceTestEnvironment {
+public class CuttingGrassPlayerLocationAcceptanceTest extends AcceptanceTestEnvironment {
 
     private EntityRef character;
     private Vector3f initialPosition;
