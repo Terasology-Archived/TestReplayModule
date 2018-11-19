@@ -50,46 +50,19 @@ public class InvertedExampleReplayTest {
             LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
             TestUtils.waitUntil(() -> localPlayer.isValid());
             EntityRef character = localPlayer.getCharacterEntity();
-            Vector3f initialPosition = new Vector3f(19.79358f, 13.511584f, 2.3982882f);
+            Vector3f initialPosition = new Vector3f(0.0f, 0.40999973f, 0.0f);
             LocationComponent location = character.getComponent(LocationComponent.class);
             assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
 
             EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-            TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810); // tests in the middle of a replay needs "checkpoints" like this.
+            TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 874); // tests in the middle of a replay needs "checkpoints" like this.
             location = character.getComponent(LocationComponent.class);
             assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
             TestUtils.waitUntil(() -> environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
 
             location = character.getComponent(LocationComponent.class);
-            Vector3f finalPosition = new Vector3f(25.189344f, 13.406443f, 8.6651945f);
+            Vector3f finalPosition = new Vector3f(-0.17837839f, 0.40654626f, 10.740363f);;
             assertEquals(finalPosition, location.getLocalPosition()); // checks final position
-            environment.getHost().shutdown();
-            GameThread.reset();
-        }
-    };
-
-    private Thread testThread2 = new Thread() {
-
-        @Override
-        public void run() {
-            TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
-            Vector3i blockLocation1 = new Vector3i(26, 12, -3);
-            Vector3i blockLocation2 = new Vector3i(26, 13, -3);
-            Vector3i blockLocation3 = new Vector3i(26, 12, -2);
-
-            //checks the block initial type of three chunks that will be modified during the replay.
-            WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
-            TestUtils.waitUntil(() -> (!(worldProvider.getBlock(blockLocation1).getDisplayName().equals("Unloaded"))));
-            assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Grass");
-            assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Air");
-            assertEquals(worldProvider.getBlock(blockLocation3).getDisplayName(), "Grass");
-
-            TestUtils.waitUntil(() -> environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
-
-            //checks the same blocks again after the replay.
-            assertEquals(worldProvider.getBlock(blockLocation1).getDisplayName(), "Grass");
-            assertEquals(worldProvider.getBlock(blockLocation2).getDisplayName(), "Grass");
-            assertEquals(worldProvider.getBlock(blockLocation3).getDisplayName(), "Air");
             environment.getHost().shutdown();
             GameThread.reset();
         }
@@ -98,12 +71,6 @@ public class InvertedExampleReplayTest {
     @Test
     public void test1() throws Exception {
         testThread1.start();
-        startReplay();
-    }
-
-    @Test
-    public void test2() throws Exception {
-        testThread2.start();
         startReplay();
     }
 

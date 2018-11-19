@@ -1,7 +1,7 @@
 {
   "title": "Example",
-  "seed": "AIj8MVblM4gYNrpOuuIO45iszg4mDGyK",
-  "time": 488651,
+  "seed": "",
+  "time": 2010,
   "registeredBlockFamilies": [
     "BuilderSampleGameplay:Dirt",
     "engine:unloaded",
@@ -9,7 +9,7 @@
     "engine:air"
   ],
   "blockIdMap": {
-    "engine:air": 10,
+    "engine:air": 4,
     "BuilderSampleGameplay:Dirt": 2,
     "engine:unloaded": 1,
     "BuilderSampleGameplay:Grass": 3
@@ -20,8 +20,8 @@
   "worlds": {
     "main": {
       "title": "main",
-      "seed": "AIj8MVblM4gYNrpOuuIO45iszg4mDGyK",
-      "time": 66655248,
+      "seed": "kBg17UCuoWqqOwV27HjIzieEnmxu4ho1",
+      "time": 43200000,
       "worldGenerator": "BuilderSampleGameplay:builderSampleWorld"
     }
   },

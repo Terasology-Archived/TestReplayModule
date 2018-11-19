@@ -47,7 +47,7 @@ public class ExampleAcceptanceTest extends AcceptanceTestEnvironment {
         LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
         TestUtils.waitUntil(() -> localPlayer.isValid());
         character = localPlayer.getCharacterEntity();
-        initialPosition = new Vector3f(19.79358f, 13.511584f, 2.3982882f);
+        initialPosition = new Vector3f(0.0f, 0.40999973f, 0.0f);
         LocationComponent location = character.getComponent(LocationComponent.class);
         assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
 
@@ -56,7 +56,7 @@ public class ExampleAcceptanceTest extends AcceptanceTestEnvironment {
     @Override
     protected void testDuringReplay() throws Exception {
         EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-        TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 1810); // tests in the middle of a replay needs "checkpoints" like this.
+        TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 874); // tests in the middle of a replay needs "checkpoints" like this.
         LocationComponent location = character.getComponent(LocationComponent.class);
         assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
     }
@@ -64,7 +64,7 @@ public class ExampleAcceptanceTest extends AcceptanceTestEnvironment {
     @Override
     protected void testOnReplayEnd() throws Exception {
         LocationComponent location = character.getComponent(LocationComponent.class);
-        Vector3f finalPosition = new Vector3f(25.189344f, 13.406443f, 8.6651945f);
+        Vector3f finalPosition = new Vector3f(-0.17837839f, 0.40654626f, 10.740363f);
         assertEquals(finalPosition, location.getLocalPosition()); // checks final position
     }
 }

@@ -44,7 +44,7 @@ public class CuttingGrassPlayerLocationAcceptanceTest extends AcceptanceTestEnvi
         LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
         TestUtils.waitUntil(() -> localPlayer.isValid());
         character = localPlayer.getCharacterEntity();
-        initialPosition = new Vector3f(0.0f, 1.3f, 0.0f);
+        initialPosition = new Vector3f(0.0f, 0.4099999f, 0.0f);
         LocationComponent location = character.getComponent(LocationComponent.class);
         assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
     }
@@ -52,7 +52,7 @@ public class CuttingGrassPlayerLocationAcceptanceTest extends AcceptanceTestEnvi
     @Override
     protected void testDuringReplay() throws Exception {
         EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-        TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 100); // tests in the middle of a replay needs "checkpoints" like this.
+        TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 300); // tests in the middle of a replay needs "checkpoints" like this.
         LocationComponent location = character.getComponent(LocationComponent.class);
         assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
     }
@@ -60,7 +60,7 @@ public class CuttingGrassPlayerLocationAcceptanceTest extends AcceptanceTestEnvi
     @Override
     protected void testOnReplayEnd() throws Exception {
         LocationComponent location = character.getComponent(LocationComponent.class);
-        Vector3f finalPosition = new Vector3f(0.0f, 0.4099998f, 0.0f);
+        Vector3f finalPosition = new Vector3f(-6.1246133f, 0.40643975f, -0.21893303f);
         assertEquals(finalPosition, location.getLocalPosition()); // checks final position
     }
 }

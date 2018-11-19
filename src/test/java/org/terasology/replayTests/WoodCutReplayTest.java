@@ -56,8 +56,8 @@ public class WoodCutReplayTest {
         replayThread.start();
 
         TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
-        Vector3i blockLocation1 = new Vector3i(-73, 43, 84);
-        Vector3i blockLocation2 = new Vector3i(-73, 44, 84);
+        Vector3i blockLocation1 = new Vector3i(33, 85, -122);
+        Vector3i blockLocation2 = new Vector3i(33, 86, -122);
 
         //waits for the chunks to be loaded properly
         WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);

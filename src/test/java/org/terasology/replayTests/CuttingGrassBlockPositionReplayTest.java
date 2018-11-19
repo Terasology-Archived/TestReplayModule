@@ -52,7 +52,7 @@ public class CuttingGrassBlockPositionReplayTest {
         replayThread.start();
 
         TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
-        Vector3i blockLocation = new Vector3i(0, -1, 2);
+        Vector3i blockLocation = new Vector3i(-6, 0, 1);
 
         //waits for the chunks to be loaded properly
         WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
