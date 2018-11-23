@@ -1,0 +1,63 @@
+{
+  "title": "DirtBreak",
+  "seed": "",
+  "time": 2392116,
+  "registeredBlockFamilies": [
+    "BuilderSampleGameplay:Dirt",
+    "Core:DoorBottom",
+    "engine:unloaded",
+    "Core:DoorTop",
+    "BuilderSampleGameplay:Grass",
+    "engine:air"
+  ],
+  "blockIdMap": {
+    "Core:DoorBottom.FRONT": 7,
+    "BuilderSampleGameplay:Grass": 11,
+    "Core:DoorTop.BACK": 4,
+    "engine:unloaded": 9,
+    "Core:DoorTop.LEFT": 1,
+    "BuilderSampleGameplay:Dirt": 10,
+    "Core:DoorBottom.RIGHT": 6,
+    "Core:DoorBottom.BACK": 8,
+    "Core:DoorBottom.LEFT": 5,
+    "Core:DoorTop.RIGHT": 2,
+    "Core:DoorTop.FRONT": 3,
+    "engine:air": 19
+  },
+  "biomeIdMap": {
+    "Core:ocean": 5,
+    "Core:mountains": 1,
+    "Core:forest": 4,
+    "Core:beach": 6,
+    "Core:desert": 3,
+    "Core:snow": 2,
+    "Core:plains": 7,
+    "engine:unknown": 0
+  },
+  "worlds": {
+    "main": {
+      "title": "main",
+      "seed": "FGlF00YOURUJXa5YgjDuhDn7PayXVIye",
+      "time": 43200000,
+      "worldGenerator": "BuilderSampleGameplay:builderSampleWorld"
+    }
+  },
+  "modules": [
+    {
+      "name": "Core",
+      "version": "2.1.1-SNAPSHOT"
+    },
+    {
+      "name": "TestReplayModule",
+      "version": "0.1.0-SNAPSHOT"
+    },
+    {
+      "name": "engine",
+      "version": "2.1.1-SNAPSHOT"
+    },
+    {
+      "name": "BuilderSampleGameplay",
+      "version": "2.1.1-SNAPSHOT"
+    }
+  ]
+}
