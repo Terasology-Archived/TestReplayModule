@@ -35,7 +35,7 @@ public class DirtBreakReplayTest {
         @Override
         public void run() {
             try {
-                String replayTitle = "DirtBreakGame";
+                String replayTitle = "DirtsTest";
                 environment.openReplay(replayTitle, true);
             } catch (Exception e) {
                 throw new RuntimeException(e);
