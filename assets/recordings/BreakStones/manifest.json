@@ -1,13 +1,14 @@
 {
-  "title": "DirtBreak",
+  "title": "BreakStones",
   "seed": "",
-  "time": 2392116,
+  "time": 157797,
   "registeredBlockFamilies": [
     "BuilderSampleGameplay:Dirt",
     "Core:DoorBottom",
     "engine:unloaded",
     "Core:DoorTop",
     "BuilderSampleGameplay:Grass",
+    "Core:Stone",
     "engine:air"
   ],
   "blockIdMap": {
@@ -15,6 +16,7 @@
     "BuilderSampleGameplay:Grass": 11,
     "Core:DoorTop.BACK": 4,
     "engine:unloaded": 9,
+    "Core:Stone": 20,
     "Core:DoorTop.LEFT": 1,
     "BuilderSampleGameplay:Dirt": 10,
     "Core:DoorBottom.RIGHT": 6,
@@ -37,7 +39,7 @@
   "worlds": {
     "main": {
       "title": "main",
-      "seed": "FGlF00YOURUJXa5YgjDuhDn7PayXVIye",
+      "seed": "HKXWByuJIKpndOZWo1yOa4luYFDmVXN0",
       "time": 43200000,
       "worldGenerator": "BuilderSampleGameplay:builderSampleWorld"
     }
@@ -45,7 +47,7 @@
   "modules": [
     {
       "name": "Core",
-      "version": "2.1.1-SNAPSHOT"
+      "version": "2.0.1-SNAPSHOT"
     },
     {
       "name": "TestReplayModule",
@@ -53,11 +55,11 @@
     },
     {
       "name": "engine",
-      "version": "2.1.1-SNAPSHOT"
+      "version": "2.0.1-SNAPSHOT"
     },
     {
       "name": "BuilderSampleGameplay",
-      "version": "2.1.1-SNAPSHOT"
+      "version": "2.0.1-SNAPSHOT"
     }
   ]
 }
