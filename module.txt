@@ -4,6 +4,8 @@
     "author" : "",
     "displayName" : "ReplayTestModule",
     "description" : "",
-    "dependencies" : [],
+    "dependencies" : [
+        {"id": "Core", "minVersion": "2.1.0"}
+    ],
     "serverSideOnly" : false
 }
