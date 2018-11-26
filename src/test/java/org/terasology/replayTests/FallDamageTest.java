@@ -56,8 +56,8 @@ public class FallDamageTest {
 
         replayThread.start();
 
-        LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
         TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
+        LocalPlayer localPlayer = CoreRegistry.get(LocalPlayer.class);
         TestUtils.waitUntil(() -> localPlayer.isValid());
         
         EntityRef character = localPlayer.getCharacterEntity();
