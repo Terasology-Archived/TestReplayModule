@@ -5,5 +5,5 @@
     "displayName" : "ReplayTestModule",
     "description" : "",
     "dependencies" : [],
-    "isServerSideOnly" : false
+    "serverSideOnly" : false
 }
