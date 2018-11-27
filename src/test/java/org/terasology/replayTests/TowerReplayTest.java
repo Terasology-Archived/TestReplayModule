@@ -50,18 +50,18 @@ public class TowerReplayTest {
         TestUtils.waitUntil(() -> localPlayer.isValid()); //waits for the local player to be loaded
 
         EntityRef character = localPlayer.getCharacterEntity();
-        Vector3f initialPosition = new Vector3f(0.0f, 37.409996f, 0.0f); //0.0, 37.409996, 0.0
+        Vector3f initialPosition = new Vector3f(0.0f, 37.409996f, 0.0f);
         LocationComponent location = character.getComponent(LocationComponent.class);
         assertEquals(initialPosition, location.getLocalPosition()); // check initial position.
 
         EventSystemReplayImpl eventSystem = (EventSystemReplayImpl) CoreRegistry.get(EventSystem.class);
-        TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 500); // tests in the middle of a replay needs "checkpoints" like this.
+        TestUtils.waitUntil(() -> eventSystem.getLastRecordedEventIndex() >= 500);
         location = character.getComponent(LocationComponent.class);
-        assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved.
+        assertNotEquals(initialPosition, location.getLocalPosition()); // checks that the player is not on the initial position after they moved in the middle of the replay
         TestUtils.waitUntil(() -> environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAY_FINISHED);
 
         location = character.getComponent(LocationComponent.class);
-        Vector3f finalPosition = new Vector3f(-0.020252455f, 38.400967f, 2.5305471f); //-0.020252455, 38.400967, 2.5305471
+        Vector3f finalPosition = new Vector3f(-0.020252455f, 38.400967f, 2.5305471f);
         assertEquals(finalPosition, location.getLocalPosition()); // checks final position
     }
 }
