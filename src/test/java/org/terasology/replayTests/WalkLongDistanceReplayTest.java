@@ -53,7 +53,7 @@ public class WalkLongDistanceReplayTest {
     }
 
     @Test
-    public void TestWalkLongDistance(){
+    public void testWalkLongDistance(){
 
         replayThread.start();
 
