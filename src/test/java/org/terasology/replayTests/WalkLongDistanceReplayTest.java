@@ -55,7 +55,7 @@ public class WalkLongDistanceReplayTest {
     }
 
     @Test
-    public void testBreakDirt(){
+    public void WalkLongDistance(){
 
         replayThread.start();
 
