@@ -24,10 +24,8 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.logic.players.LocalPlayer;
 import org.terasology.math.geom.Vector3f;
-import org.terasology.math.geom.Vector3i;
 import org.terasology.recording.RecordAndReplayStatus;
 import org.terasology.registry.CoreRegistry;
-import org.terasology.world.WorldProvider;
 
 import static org.junit.Assert.assertEquals;
 
@@ -55,7 +53,7 @@ public class WalkLongDistanceReplayTest {
     }
 
     @Test
-    public void WalkLongDistance(){
+    public void TestWalkLongDistance(){
 
         replayThread.start();
 
