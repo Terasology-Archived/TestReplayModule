@@ -56,11 +56,11 @@ public class ExplodeReplayTest {
         replayThread.start();
 
         TestUtils.waitUntil(() -> (environment.isInitialised() && environment.getRecordAndReplayStatus() == RecordAndReplayStatus.REPLAYING));
-        Vector3i testBlock1 = new Vector3i( 3, 36, -6);
-        Vector3i testBlock2 = new Vector3i( 3, 34, -5);
-        Vector3i testBlock3 = new Vector3i( 1, 34, -4);
-        Vector3i testBlock4 = new Vector3i( 2, 36, -6);
-        Vector3i testBlock5 = new Vector3i( 4, 34, -5);
+        Vector3i testBlock1 = new Vector3i( -5, 36, -2);
+        Vector3i testBlock2 = new Vector3i( -5, 35, -2);
+        Vector3i testBlock3 = new Vector3i( -5, 35, -3);
+        Vector3i testBlock4 = new Vector3i( -4, 36, -2);
+        Vector3i testBlock5 = new Vector3i( -5, 34, -3);
 
         //waits for the chunks to be loaded properly
         WorldProvider worldProvider = CoreRegistry.get(WorldProvider.class);
