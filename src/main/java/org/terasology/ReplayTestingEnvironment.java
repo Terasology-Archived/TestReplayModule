@@ -15,7 +15,7 @@
  */
 package org.terasology;
 
-import com.google.api.client.util.Lists;
+import com.google.common.collect.Lists;
 import org.terasology.config.Config;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
